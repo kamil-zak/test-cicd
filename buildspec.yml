@@ -1,0 +1,25 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo "Logowanie do Amazon ECR..."
+      # Zmienne środowiskowe (np. AWS_ACCOUNT_ID) są dostarczane przez CodeBuild
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+  build:
+    commands:
+      - echo "Budowanie obrazu Docker rozpoczęte $(date)"
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo "Budowanie obrazu Docker zakończone $(date)"
+      - echo "Wysyłanie obrazu Docker do ECR..."
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      # Tworzenie pliku imagedefinitions.json dla ECS
+      - printf '[{"name":"nazwa-twojego-kontenera","imageUri":"%s"}]' "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
