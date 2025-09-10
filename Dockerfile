@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM 600862335804.dkr.ecr.eu-central-1.amazonaws.com/docker-hub/node:24-alpine
 
 WORKDIR /app
 
