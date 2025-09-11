@@ -1,4 +1,4 @@
-FROM 600862335804.dkr.ecr.eu-central-1.amazonaws.com/docker-hub/node:22-alpine
+FROM 600862335804.dkr.ecr.eu-central-1.amazonaws.com/docker-hub/library/node:22-alpine
 
 WORKDIR /app
 
